@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Thực Trạng Game & Mạng Xã Hội Trong Giới Trẻ</title>
+    <style>
+        :root {
+            --primary-color: #4a00e0;
+            --secondary-color: #8e2de2;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 12px;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .audio-btn {
+            background: #e0e0e0;
+            color: #333;
+            padding: 5px 15px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+            text-align: left;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: none;
+            font-size: 15px;
+        }
+
+        .option-btn:hover {
+            background-color: #e2e2e2;
+            transform: none;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .score-text {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #2ecc71;
+        }
+
+        .review-item {
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- MÀN HÌNH ĐĂNG KÝ TÊN -->
+        <div id="start-screen" class="screen active">
+            <h1>CHÀO MỪNG BẠN ĐẾN VỚI QUIZ</h1>
+            <p>Chủ đề: Thực trạng Game & Mạng xã hội trong giới trẻ hiện nay</p>
+            <p><i>Mỗi câu đúng được 10 điểm. Bạn chỉ được làm bài 1 lần duy nhất!</i></p>
+            <input type="text" id="username" placeholder="Nhập họ và tên của bạn..." autocomplete="off">
+            <br>
+            <button onclick="startQuiz()">Bắt đầu chơi</button>
+        </div>
+
+        <!-- MÀN HÌNH CHƠI GAME -->
+        <div id="quiz-screen" class="screen">
+            <div class="progress-bar"><div id="progress" class="progress"></div></div>
+            <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px;">
+                <span id="question-number">Câu hỏi 1/10</span>
+                <span id="player-display">Người chơi: </span>
+            </div>
+            
+            <button class="audio-btn" onclick="speakQuestion()">🔊 Nghe đọc câu hỏi</button>
+            <h3 id="question-text" style="margin-top: 10px;">Nội dung câu hỏi ở đây?</h3>
+            
+            <div id="options" class="options-container">
+                <!-- Các đáp án sẽ tự động load ở đây -->
+            </div>
+        </div>
+
+        <!-- MÀN HÌNH KẾT QUẢ -->
+        <div id="result-screen" class="screen">
+            <h1>KẾT QUẢ BÀI LÀM</h1>
+            <p id="thank-you-msg">Cảm ơn bạn!</p>
+            <div class="score-text" id="final-score">Điểm của bạn: 0 / 100</div>
+            <p id="evaluation-msg"></p>
+            <hr>
+            <p style="color: #777; font-size: 14px;">Hệ thống đã khóa. Bạn không thể thực hiện lại lượt chơi này.</p>
+        </div>
+    </div>
+
+    <script>
+        // Danh sách 10 câu hỏi thực trạng
+        const quizData = [
+            {
+                q: "Hiện tượng 'FOMO' (Sợ bị bỏ lỡ) trên mạng xã hội thường khiến giới trẻ có hành vi nào?",
+                a: ["Liên tục kiểm tra điện thoại và làm mới bảng tin", "Tắt thông báo và rời xa mạng xã hội", "Chỉ sử dụng mạng xã hội vào cuối tuần", "Tập trung hơn vào công việc học tập"],
+                correct: 0
+            },
+            {
+                q: "Thời gian khuyến nghị tối đa dành cho việc giải trí trực tuyến (game, MXH) mỗi ngày để không ảnh hưởng sức khỏe là bao nhiêu?",
+                a: ["Khoảng 1 - 2 tiếng", "Từ 4 - 5 tiếng", "Càng lâu càng tốt", "Trên 6 tiếng"],
+                correct: 0
+            },
+            {
+                q: "Tác hại nghiêm trọng nhất của việc nghiện game trực tuyến thức đêm kéo dài ở giới trẻ là gì?",
+                a: ["Rối loạn giấc ngủ, suy giảm trí nhớ và sức khỏe tâm thần", "Tăng khả năng phản xạ của tay", "Mở rộng mối quan hệ bạn bè quốc tế", "Giúp tăng cân nhanh chóng"],
+                correct: 0
+            },
+            {
+                q: "Hành vi 'Cyberbullying' (Bắt nạt trên mạng) phổ biến hiện nay bao gồm những hành động nào?",
+                a: ["Công kích, lăng mạ, phát tán thông tin sai lệch về người khác", "Chia sẻ bài viết truyền cảm hứng", "Gửi lời chúc mừng sinh nhật bạn bè", "Bình luận khen ngợi ngoại hình người khác"],
+                correct: 0
+            },
+            {
+                q: "Việc lướt các video ngắn (như TikTok, Reels) liên tục nhiều giờ liền gây ra hội chứng nào cho não bộ giới trẻ?",
+                a: ["Suy giảm khả năng tập trung sâu (Short attention span)", "Tăng cường tư duy logic", "Phát triển kỹ năng đọc hiểu văn bản dài", "Cải thiện khả năng kiên nhẫn"],
+                correct: 0
+            },
+            {
+                q: "Đâu là biểu hiện rõ rệt nhất của một người đang bị 'nghiện mạng xã hội'?",
+                a: ["Cảm thấy bồn chồn, lo lắng hoặc tức giận khi không có kết nối Internet", "Chỉ dùng mạng xã hội khi cần tìm tài liệu học tập", "Luôn khóa tài khoản sau khi dùng xong", "Không quan tâm đến lượt tương tác (like, share)"],
+                correct: 0
+            },
+            {
+                q: "Trào lưu tạo dựng 'vỏ bọc hoàn hảo' (sống ảo) trên MXH có thể dẫn đến hệ lụy tâm lý nào?",
+                a: ["Áp lực đồng lứa (Peer pressure) và trầm cảm khi đối diện đời thực", "Tăng sự tự tin tuyệt đối vào bản thân", "Giúp giải quyết triệt để mọi khó khăn tài chính", "Gắn kết tình cảm gia đình hơn"],
+                correct: 0
+            },
+            {
+                q: "Việc nạp tiền quá mức vào game (Pay-to-win) ở học sinh, sinh viên hiện nay chủ yếu dẫn đến hệ lụy gì?",
+                a: ["Kiệt quệ tài chính cá nhân, dễ sa ngã vào các khoản vay mượn xấu", "Được nhà trường khen thưởng", "Trở thành triệu phú nhờ game", "Nâng cao kết quả học tập ở trường"],
+                correct: 0
+            },
+            {
+                q: "Khi gặp thông tin giật gân, chưa kiểm chứng trên mạng xã hội, giới trẻ nên làm gì là đúng đắn nhất?",
+                a: ["Kiểm tra nguồn tin từ các báo chính thống trước khi tin tưởng hoặc chia sẻ", "Chia sẻ ngay lập tức để cảnh báo mọi người", "Để lại bình luận chỉ trích nhân vật trong tin đồn", "Tag tất cả bạn bè vào cùng xem"],
+                correct: 0
+            },
+            {
+                q: "Để sử dụng mạng xã hội và game một cách thông minh, giải pháp nào sau đây là tối ưu?",
+                a: ["Cân bằng thời gian online với các hoạt động thể chất và tương tác trực tiếp", "Xóa vĩnh viễn tất cả tài khoản mạng xã hội và đập bỏ điện thoại", "Chỉ chơi game xuyên đêm vào ngày nghỉ", "Thay thế hoàn toàn việc giao tiếp ngoài đời bằng việc chat online"],
+                correct: 0
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let playerName = "";
+
+        // Chuyển đổi màn hình
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Bắt đầu Quiz
+        function startQuiz() {
+            const nameInput = document.getElementById('username').value.trim();
+            if (nameInput === "") {
+                alert("Vui lòng nhập tên của bạn trước khi bắt đầu!");
+                return;
+            }
+            playerName = nameInput;
+            document.getElementById('player-display').innerText = "Người chơi: " + playerName;
+            showScreen('quiz-screen');
+            loadQuestion();
+        }
+
+        // Tải câu hỏi hiện tại
+        function loadQuestion() {
+            if (currentQuestion >= quizData.length) {
+                endQuiz();
+                return;
+            }
+
+            // Cập nhật thanh tiến trình
+            const progressPercent = ((currentQuestion) / quizData.length) * 100;
+            document.getElementById('progress').style.width = progressPercent + "%";
+            document.getElementById('question-number').innerText = `Câu hỏi ${currentQuestion + 1}/${quizData.length}`;
+
+            const currentData = quizData[currentQuestion];
+            document.getElementById('question-text').innerText = currentData.q;
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = "";
+
+            currentData.a.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.innerText = `${String.fromCharCode(65 + index)}. ${option}`;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            // Tự động đọc câu hỏi khi chuyển câu mới
+            speakQuestion();
+        }
+
+        // Hàm lồng giọng đọc tiếng Việt (Text-to-Speech)
+        function speakQuestion() {
+            if ('speechSynthesis' in window) {
+                // Hủy các giọng đọc đang dang dở để tránh đè âm
+                window.speechSynthesis.cancel();
+                
+                const currentData = quizData[currentQuestion];
+                const textToSpeak = `Câu hỏi số ${currentQuestion + 1}. ${currentData.q}`;
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'vi-VN'; // Cài đặt ngôn ngữ Tiếng Việt
+                utterance.rate = 0.95;    // Tốc độ đọc vừa phải
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.log("Trình duyệt của bạn không hỗ trợ giọng đọc Text-to-Speech.");
+            }
+        }
+
+        // Xử lý khi chọn câu trả lời
+        function selectAnswer(selectedIndex) {
+            const currentData = quizData[currentQuestion];
+            if (selectedIndex === currentData.correct) {
+                score += 10;
+            }
+            
+            // Chuyển sang câu tiếp theo luôn (Chỉ cho làm 1 lần, không sửa đáp án)
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        // Kết thúc và hiển thị điểm (Khóa luôn không cho làm lại)
+        function endQuiz() {
+            // Tắt giọng đọc khi kết thúc
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            document.getElementById('progress').style.width = "100%";
+            document.getElementById('thank-you-msg').innerText = `Cảm ơn bạn ${playerName} đã hoàn thành bài trắc nghiệm!`;
+            document.getElementById('final-score').innerText = `Điểm của bạn: ${score} / 100 điểm`;
+
+            let evaluation = "";
+            if (score >= 80) {
+                evaluation = "Chúc mừng! Bạn có nhận thức rất tốt về thực trạng mạng xã hội và game hiện nay, hãy tiếp tục phát huy lối sống lành mạnh này nhé!";
+            } else if (score >= 50) {
+                evaluation = "Khá tốt! Bạn đã nhận diện được một số nguy cơ, tuy nhiên hãy chú ý hơn để không sa đà vào các bẫy tâm lý trực tuyến.";
+            } else {
+                evaluation = "Cảnh báo! Có vẻ bạn chưa hiểu rõ các tác hại tiềm ẩn của game và mạng xã hội. Hãy cân đối lại thời gian cá nhân trực tuyến để bảo vệ sức khỏe.";
+            }
+            document.getElementById('evaluation-msg').innerText = evaluation;
+
+            showScreen('result-screen');
+        }
+    </script>
+</body>
+</html>
